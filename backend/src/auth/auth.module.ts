@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './passport/local.strategy';
+import { JwtStrategy } from './passport/jwt.strategy';
 
 @Module({
   imports:[UsersModule,
@@ -17,12 +18,12 @@ import { LocalStrategy } from './passport/local.strategy';
             expiresIn: configService.get<string>('JWT_ACCESS_TOKEN_EXPIRED')
         },
       }),
-      inject: [ConfigService],
+      inject: [ConfigService],  
     }),
     PassportModule
     
   ],
   controllers: [AuthController],
-  providers: [AuthService,LocalStrategy]
+  providers: [AuthService,LocalStrategy,JwtStrategy]
 })
 export class AuthModule {}
