@@ -7,6 +7,9 @@ import { Model } from 'mongoose';
 import { hashPasswordHelper } from '@/utils/helper';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
+import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import dayjs from 'dayjs';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UsersService {
@@ -77,6 +80,32 @@ export class UsersService {
 
   async findByEmail(email:string){
     return await this.userModel.findOne({email})
+  }
+
+
+  async handleRegister(registerDto:CreateAuthDto){
+    const {name,email,password} = registerDto
+
+    //check email
+    const isExist = await this.isEmailExits(email)
+    if(isExist){
+      throw new BadRequestException(`Email da ton tai :${email} `)
+    }
+    //hash password
+    const hashPassword = await hashPasswordHelper(password)
+    const user = await this.userModel.create({
+      name,email,password:hashPassword,isActive:false,
+       codeId:uuidv4(),
+       codeExpired:dayjs().add(1,'minutes')
+    })
+    
+    //send email
+
+
+    return{
+      _id:user._id
+    }
+     
   }
 
 
