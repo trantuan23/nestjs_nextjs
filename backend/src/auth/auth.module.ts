@@ -20,10 +20,9 @@ import { JwtAuthGuard } from './passport/jwt-auth.guard';
             expiresIn: configService.get<string>('JWT_ACCESS_TOKEN_EXPIRED')
         },
       }),
-      inject: [ConfigService],  
+      inject: [ConfigService],
     }),
     PassportModule
-    
   ],
   controllers: [AuthController],
   providers: [AuthService,LocalStrategy,JwtStrategy,{
