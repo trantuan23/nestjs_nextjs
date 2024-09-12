@@ -10,7 +10,6 @@ const Login = () => {
         const{email,password} = values
         const res = await authenticate(email,password)
         console.log(res);
-        
        
     };
     return (
@@ -54,9 +53,6 @@ const Login = () => {
                         >
                             <Input.Password />
                         </Form.Item>
-
-
-
                         <Form.Item
                         >
                             <Button type="primary" htmlType="submit">

@@ -1,44 +1,67 @@
 
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import { pages } from "next/dist/build/templates/app-page";
- 
+import { InvalidAccountActive, InvalidEmailPasswordError } from "./utils/error";
+import { sendRequest } from "./utils/api";
+import { IUser } from "./types/next-auth";
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
       credentials: {
         email: {},
         password: {},
       },
       authorize: async (credentials) => {
-        console.log(">>check",credentials);
-        
-        let user = null
+        const res = await sendRequest<IBackendRes<ILogin>>({
+          method: "POST",
+          url: "http://localhost:8000/api/v1/auth/login",
+          body: {
+            username: credentials.email,
+            password: credentials.password
+          }
+        })
 
-        // user={
-        //   _id:"123",
-        //   username:"tuan",
-        //   email:"tuan@gmail.com",
-        //   isVerify:"1",
-        //   type:"cc",
-        //   role:"cc"
-        // }
- 
-        if (!user) {
-          // No user found, so this is their first attempt to login
-          // meaning this is also the place you could do registration
-          throw new Error("User not found.")
+        if (!res.statusCode) {
+          return {
+            _id:res.data?.user?._id,
+            name:res.data?.user?.name,
+            email:res.data?.user?.email,
+            access_token:res.data?.access_token
+          }
         }
- 
-        // return user object with their profile data
-        return user
+
+        else if (+res.statusCode === 401) {
+          throw new InvalidEmailPasswordError()
+        }
+
+        else if (res.statusCode === 400) {
+          throw new InvalidAccountActive()
+        } else {
+          return {
+            error: "Internal server error",
+            code: 0
+          }
+        }
+
+
       },
     }),
 
   ],
-  pages:{
-    signIn:"/auth/login"
-  }
+  pages: {
+    signIn: "/auth/login"
+  },
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) { // User is available during sign-in
+        token.user = (user as IUser)
+      }
+      return token
+    },
+    session({ session, token }) {
+      (session.user as IUser) = token.user
+      return session
+    },
+  },
 })
