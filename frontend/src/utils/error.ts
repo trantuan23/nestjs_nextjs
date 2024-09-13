@@ -11,9 +11,9 @@ export class CustomAuthError extends AuthError {
 }
 
 export class InvalidEmailPasswordError extends AuthError {
-    static type = "Email or password khong hop le !"
+    static type = "Email or password is correct  !"
   }
 
 export class InvalidAccountActive extends AuthError {
-    static type = "Email chua duoc kich hoat !"
+    static type = "Account isn't active !"
   }

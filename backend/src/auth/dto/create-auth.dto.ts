@@ -8,3 +8,10 @@ export class CreateAuthDto {
     @IsOptional()
     name: string;
 }
+
+export class CheckAuthDto {
+    @IsNotEmpty({message:"Id khong duoc bo trong !"})
+    _id: string;
+    @IsNotEmpty({message:"code khong duoc bo trong !"})
+    code: string;
+}
