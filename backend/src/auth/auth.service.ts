@@ -37,6 +37,10 @@ export class AuthService {
     return await this.usersService.HandleActive(data)
   }
 
+  retryActive = async(data:string) =>{
+    return await this.usersService.retryActive(data)
+  }
+
   
 
 

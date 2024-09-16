@@ -98,7 +98,7 @@ export class UsersService {
     const user = await this.userModel.create({
       name, email, password: hashPassword, isActive: false,
       codeId: codeId,
-      codeExpired: dayjs().add(30, 'seconds')
+      codeExpired: dayjs().add(180, 'seconds')
     })
 
     //send email
@@ -126,25 +126,60 @@ export class UsersService {
 
   async HandleActive(data: CheckAuthDto) {
     const user = await this.userModel.findOne({
-      _id:data._id,
-      codeId:data.code
+      _id: data._id,
+      codeId: data.code
     })
-    if(!user){
+    if (!user) {
       throw new BadRequestException("Ma code khong hop le hoac het han !")
     }
-    
+
     //check expire code
 
     const isBeforeCheck = dayjs().isBefore(user.codeExpired)
-    if(isBeforeCheck){
-      await this.userModel.updateOne({_id:data._id},{
-        isActive:true
+    if (isBeforeCheck) {
+      await this.userModel.updateOne({ _id: data._id }, {
+        isActive: true
       })
-      return {isBeforeCheck}
-    }else{
+      return { isBeforeCheck }
+    } else {
       throw new BadRequestException("Ma code khong hop le hoac het han !")
     }
-    return {isBeforeCheck}
+  }
+
+
+  async retryActive(email: string) {
+    
+    const user = await this.userModel.findOne({ email })
+    if(!user){
+      throw new BadRequestException("Tai khoan khong ton tai !")
+    }
+    if(user.isActive){
+      throw new BadRequestException("Tai khoan khong ton tai !")
+    }
+    const codeId = uuidv4()
+
+    //update user
+    await user.updateOne({
+      codeId: codeId,
+      codeExpired: dayjs().add(180, 'seconds')
+    })
+
+    //send email
+    this.mailerService.sendMail({
+      
+      to: user.email,
+      subject: 'Active account ', 
+      text: 'welcome', 
+      template: "register",
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId
+
+      }
+
+    })
+
+    return { _id: user._id }
   }
 
 

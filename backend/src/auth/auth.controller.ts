@@ -31,6 +31,13 @@ export class AuthController {
     return this.authService.checkCode(registerDto)
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Public()
+  @Post('retry-active')
+  RetryActive(@Body("email") email:string) {
+    return this.authService.retryActive(email)
+  }
+
   @Public()
   @Get('testmail')
   testMail() {
@@ -50,6 +57,8 @@ export class AuthController {
     .catch(() => {});
     return "Ok"
   }
+
+
 
 
   

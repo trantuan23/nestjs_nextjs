@@ -16,7 +16,6 @@ const Verify = (props: any) => {
       method: "POST",
       body: { _id, code },
     });
-    console.log(values);
     
     if (res?.data) {
       message.info("Kich hoat tai khoan thanh cong !")
@@ -43,7 +42,7 @@ const Verify = (props: any) => {
         >
           <legend>Kích hoạt tài khoản</legend>
           <Form
-            name="basic"
+            name="verify"
             onFinish={onFinish}
             autoComplete="off"
             layout="vertical"
