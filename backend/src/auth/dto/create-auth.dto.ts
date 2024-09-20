@@ -15,3 +15,17 @@ export class CheckAuthDto {
     @IsNotEmpty({message:"code khong duoc bo trong !"})
     code: string;
 }
+
+
+
+export class ChangePasswordAuthDto {
+    @IsNotEmpty({message:"Code khong duoc bo trong !"})
+    code: string;
+    @IsNotEmpty({message:"password khong duoc bo trong !"})
+    password: string;
+    @IsNotEmpty({message:"confirmPassword khong duoc bo trong !"})
+    confirmPassword: string;
+    @IsNotEmpty({message:"Email khong duoc bo trong !"})
+    email: string;
+
+}

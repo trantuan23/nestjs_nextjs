@@ -7,7 +7,7 @@ import { Model } from 'mongoose';
 import { hashPasswordHelper } from '@/utils/helper';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
-import { CheckAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import { ChangePasswordAuthDto, CheckAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -148,12 +148,12 @@ export class UsersService {
 
 
   async retryActive(email: string) {
-    
+
     const user = await this.userModel.findOne({ email })
-    if(!user){
+    if (!user) {
       throw new BadRequestException("Tai khoan khong ton tai !")
     }
-    if(user.isActive){
+    if (user.isActive) {
       throw new BadRequestException("Tai khoan khong ton tai !")
     }
     const codeId = uuidv4()
@@ -166,10 +166,10 @@ export class UsersService {
 
     //send email
     this.mailerService.sendMail({
-      
+
       to: user.email,
-      subject: 'Active account ', 
-      text: 'welcome', 
+      subject: 'Active account ',
+      text: 'welcome',
       template: "register",
       context: {
         name: user?.name ?? user.email,
@@ -181,6 +181,65 @@ export class UsersService {
 
     return { _id: user._id }
   }
+
+
+  async retryPassword(email: string) {
+
+    const user = await this.userModel.findOne({ email })
+    if (!user) {
+      throw new BadRequestException("Tai khoan khong ton tai !")
+    }
+
+
+    const codeId = uuidv4()
+
+    //update user
+    await user.updateOne({
+      codeId: codeId,
+      codeExpired: dayjs().add(180, 'seconds')
+    })
+
+    //send email
+    this.mailerService.sendMail({
+
+      to: user.email,
+      subject: ' Change to password to account ! ',
+      text: 'welcome',
+      template: "register",
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId
+
+      }
+
+    })
+
+    return { _id: user._id, email: user.email }
+  }
+
+
+  async changePassword(data: ChangePasswordAuthDto) {
+
+    if (data.confirmPassword !== data.password) {
+      throw new BadRequestException("Password and changePassword invalild !")
+
+    }
+    const user = await this.userModel.findOne({ email: data.email })
+    const isBeforeCheck = dayjs().isBefore(user.codeExpired)
+    if (isBeforeCheck) {
+      const newPassword = await hashPasswordHelper(data.password)
+      await user.updateOne({ password: newPassword })
+      return { isBeforeCheck }
+    } else {
+      throw new BadRequestException("Ma code khong hop le hoac het han !")
+    }
+
+  }
+
+
+
+
+
 
 
 
